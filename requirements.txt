@@ -1,0 +1,9 @@
+numpy
+torch
+wandb
+tensorboard
+wrapt
+datasets
+transformers
+sentencepiece
+einops
