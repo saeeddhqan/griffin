@@ -80,6 +80,9 @@ def after_conf_init():
 	torch.set_float32_matmul_precision('high')
 	torch.backends.cuda.matmul.allow_tf32 = True
 	torch.backends.cudnn.allow_tf32 = True
+	mode.conf_model.dim = config.dim
+	mode.conf_model.smqa_q_heads = config.dim // 128
+	mode.conf_model.smqa_head_dim = 128
 
 class Config:
 	def __init__(self, data_dict: dict) -> NoReturn:
@@ -141,8 +144,8 @@ class Config:
 		'''
 		for kv in args._get_kwargs():
 			k, v = kv
-			if k in dir(model.conf_mamba):
-				model.conf_mamba.k = v
+			if k in dir(model.conf_model):
+				model.conf_model.k = v
 			self.__setattr__(k, v)
 
 		after_conf_init()
@@ -319,7 +322,7 @@ class ManageModel:
 				fused=use_fused,
 			)
 
-		ver = f'{config.variation}_{model.conf_mamba.ngroups}ng_mamba'
+		ver = f'{config.variation}_griffin'
 
 		variation = f"{ver}_{config.nlayers}nl_\
 		{config.dim}d_{config.dropout}\
@@ -333,7 +336,7 @@ class ManageModel:
 			)
 		if config.wandb:
 			self.wandb_init = wandb.init(
-				project='mamba',
+				project='griffin',
 				name=variation,
 				config=config.get_model_params(),
 			)
@@ -613,8 +616,8 @@ if __name__ == '__main__':
 			else:
 				config.data_load = model.Data(config)
 				model.config = config
-				themodel = model.Transformer()
-				task.model = torch.compile(themodel) if config.compile else themodel
+				the_model = model.Griffin()
+				task.model = torch.compile(the_model) if config.compile else the_model
 			task.train()
 		case 'test':
 			config.mode = 'inference'

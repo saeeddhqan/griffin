@@ -7,3 +7,4 @@ datasets
 transformers
 sentencepiece
 einops
+flash_attn
